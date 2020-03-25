@@ -1,0 +1,47 @@
+# The Docker Config version. Do not change.
+version: "3"
+services:
+  web:
+    # REPLACE registry/repo:tag with your registry and repo details
+    image: alundin/apidemo:latest
+    deploy:
+      replicas: 5
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 50M
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "80:80"
+    networks:
+      - webnet
+  # NEW VISUALIZER SERVICE START (no need to edit anything below; this image has been created by Docker and anyone can use it!)
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - webnet
+  # NEW VISUALIZER SERVICE END
+  # NEW REDIS SERVICE STARTS HERE (no need to edit anything below; this image has been created by Docker and anyone can use it!)
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - "/home/docker/data:/data"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: redis-server --appendonly yes
+    networks:
+      - webnet
+  # NEW REDIS SERVICE END
+networks:
+  webnet:
